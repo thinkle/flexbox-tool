@@ -59,7 +59,7 @@
         {m.name}
       </PropButton>
     {/each}
-    <br />Custom width:
+    <br />Custom size:
     <input width="3" bind:value={width} type="number" min={0} />x<input
       width="3"
       bind:value={height}
