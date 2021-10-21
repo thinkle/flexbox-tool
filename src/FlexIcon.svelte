@@ -3,10 +3,16 @@
   export let val;
   export let isChild;
   import { preferences } from "./store";
+  export let store = preferences;
   const W = 50;
   const H = 10;
   let width = W;
   let height = H;
+
+  let parentStore = store;
+  if (isChild) {
+    parentStore = $store.parent || preferences;
+  }
 
   $: {
     if (prop == "flex-direction") {
@@ -18,7 +24,7 @@
         height = H;
       }
     } else {
-      if ($preferences["flex-direction"] == "column") {
+      if ($parentStore["flex-direction"] == "column") {
         width = H;
         height = W;
       } else {
@@ -47,20 +53,20 @@
 </script>
 
 <div
-  style={`--width:${width}px;--height:${height}px;--default-direction:${$preferences["flex-direction"]}`}
+  style={`--width:${width}px;--height:${height}px;--default-direction:${$parentStore["flex-direction"]}`}
 >
   {#if isChild}
     <span>
       <b><i /></b>
       <b
         class="highlight"
-        style={`${prop}:${val};${getExtraStyle(prop, val, $preferences)}`}
+        style={`${prop}:${val};${getExtraStyle(prop, val, $parentStore)}`}
         ><i /></b
       >
       <b><i /></b>
     </span>
   {:else}
-    <span style={`${prop}:${val};${getExtraStyle(prop, val, $preferences)}`}>
+    <span style={`${prop}:${val};${getExtraStyle(prop, val, $parentStore)}`}>
       <b><i /></b>
       <b><i /></b>
       <b><i /></b>

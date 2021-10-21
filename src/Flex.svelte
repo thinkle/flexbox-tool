@@ -1,11 +1,16 @@
 <script>
+  import FlexParentSettings from "./FlexParentSettings.svelte";
   import Collapser from "./Collapser.svelte";
-  import { childPreferences, preferences } from "./store";
+  import { preferences } from "./store";
   import { alignVals, justVals, wrapVals } from "./flexprops.js";
   import PropButton from "./PropButton.svelte";
   import { get } from "svelte/store";
   import getStyle from "./getStyle.js";
   export let children = 3;
+  export let containerEl = "div";
+  export let containerClass = "flex-container";
+  import ChildCSSBlock from "./ChildCSSBlock.svelte";
+  import ChildHTMLBlock from "./ChildHTMLBlock.svelte";
   let childnums = [];
   $: {
     childnums = [];
@@ -14,9 +19,9 @@
     }
   }
   import FlexChild from "./FlexChild.svelte";
-  $: childPreferences.addChildren(children);
-  let containerEl = "div";
-  let containerClass = "flex-container";
+
+  $: preferences.addChildren(children);
+
   let containerName;
   $: containerName =
     (containerClass && `${containerEl}.${containerClass}`) || containerEl;
@@ -39,38 +44,7 @@
 
 <div class="wrap">
   <header>
-    <Collapser name="Children">
-      <input bind:value={children} type="number" style="width:3em;" />
-    </Collapser>
-    <Collapser name="Dir">
-      <PropButton prop="flex-direction" val="row" store={preferences}>
-        R
-      </PropButton>
-      <PropButton prop="flex-direction" val="column" store={preferences}>
-        C
-      </PropButton>
-    </Collapser>
-    <Collapser name="Align">
-      {#each alignVals as a}
-        <PropButton prop="align-items" val={a.val} store={preferences}>
-          {a.name}
-        </PropButton>
-      {/each}
-    </Collapser>
-    <Collapser name="Justify">
-      {#each justVals as a}
-        <PropButton prop="justify-content" val={a.val} store={preferences}>
-          {a.name}
-        </PropButton>
-      {/each}
-    </Collapser>
-    <Collapser name="Wrap">
-      {#each wrapVals as a}
-        <PropButton prop="flex-wrap" val={a.val} store={preferences}>
-          {a.name}
-        </PropButton>
-      {/each}
-    </Collapser>
+    <FlexParentSettings bind:children preferencesStore={preferences} />
     <!-- <section><a href="#code">Jump to Code</a></section> -->
   </header>
   <main
@@ -78,8 +52,8 @@
   >
     <div class="flex" style={getStyle($preferences)}>
       {#each childnums as child}
-        <FlexChild preferences={$childPreferences[child]} n={child}>
-          Child {child}
+        <FlexChild preferences={$preferences._children[child]} n={child}>
+          Child {child + 1}
         </FlexChild>
       {/each}
     </div>
@@ -98,26 +72,26 @@
 {"}"}
 	</pre>
       {#each childnums as n}
-        {#if getStyle(get($childPreferences[n]))}
-          <pre>
-{containerName} *:nth-child({n+1}) {"{"}{getStyle(get($childPreferences[n]))}
-{"}"}	
-		</pre>
-        {/if}
+        <ChildCSSBlock
+          preferences={$preferences._children[n]}
+          parentSelector="{containerName} > *:nth-child({n + 1})"
+        />
       {/each}
       /* end generated code */
     </code>
     <h3>HTML</h3>
     <code>
       <pre>
-	<!-- HTML generated with Hinkle's flexbox code generator -->
-	{`<${containerEl} class="${containerClass}">`}{#each childnums as child}{`
-  <div> <!-- any element will work - doesn't have to be a div -->
-    <!-- child ${child+1} content here -->
-  </div>
-`}{/each}{`</${containerEl}>`}
-<!-- end generated code -->
-	</pre>
+	&lt;!-- HTML generated with Hinkle's flexbox code generator --&gt;
+{`<${containerEl} class="${containerClass}">`}</pre>
+      {#each childnums as child, n}<ChildHTMLBlock
+          count={n + 1}
+          preferences={$preferences._children[n]}
+          level={1}
+        />{/each}
+      <pre>{`</${containerEl}>`}
+&lt;!-- end generated code --&gt;
+</pre>
     </code>
   </footer>
 </div>
@@ -169,5 +143,13 @@
   }
   header {
     z-index: 2;
+  }
+  code :global(pre) {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  main {
+    flex-grow: 1;
   }
 </style>
